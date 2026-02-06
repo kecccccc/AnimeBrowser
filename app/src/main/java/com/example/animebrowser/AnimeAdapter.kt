@@ -9,7 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 class AnimeAdapter(
     private val animeList: List<Anime>,
-    private val onAnimeClick: (Anime) -> Unit
+    private val onAnimeClick: (Anime) -> Unit,
+    private val isTopRated: Boolean = false  // Нови параметар за разликовање
 ) : RecyclerView.Adapter<AnimeAdapter.AnimeViewHolder>() {
 
     class AnimeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -19,8 +20,15 @@ class AnimeAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AnimeViewHolder {
+        // Бира layout на основу isTopRated флага
+        val layoutId = if (isTopRated) {
+            R.layout.item_anime_top_rated
+        } else {
+            R.layout.item_anime_trending
+        }
+
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_anime, parent, false)
+            .inflate(layoutId, parent, false)
         return AnimeViewHolder(view)
     }
 

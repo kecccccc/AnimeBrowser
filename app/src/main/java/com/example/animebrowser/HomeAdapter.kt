@@ -1,5 +1,6 @@
 package com.example.animebrowser
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -57,10 +58,14 @@ class HomeFragment : Fragment() {
             false
         )
 
-        rvTrending.adapter = AnimeAdapter(trendingList) { anime ->
-            Toast.makeText(requireContext(), "Clicked: ${anime.title}", Toast.LENGTH_SHORT).show()
-            // Овде ћеш касније отворити DetailActivity
-        }
+        // Користи мање картице за trending
+        rvTrending.adapter = AnimeAdapter(
+            animeList = trendingList,
+            onAnimeClick = { anime ->
+                openAnimeDetail(anime)
+            },
+            isTopRated = false
+        )
     }
 
     private fun setupTopRated() {
@@ -78,8 +83,22 @@ class HomeFragment : Fragment() {
             false
         )
 
-        rvTopRated.adapter = AnimeAdapter(topRatedList) { anime ->
-            Toast.makeText(requireContext(), "Clicked: ${anime.title}", Toast.LENGTH_SHORT).show()
+        // Користи веће картице за top rated
+        rvTopRated.adapter = AnimeAdapter(
+            animeList = topRatedList,
+            onAnimeClick = { anime ->
+                openAnimeDetail(anime)
+            },
+            isTopRated = true
+        )
+    }
+
+    private fun openAnimeDetail(anime: Anime) {
+        val intent = Intent(requireContext(), AnimeDetailActivity::class.java).apply {
+            putExtra("ANIME_ID", anime.id)
+            putExtra("ANIME_TITLE", anime.title)
+            putExtra("ANIME_RATING", anime.rating)
         }
+        startActivity(intent)
     }
 }
