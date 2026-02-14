@@ -12,6 +12,13 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
+        // Load HomeFragment initially (THIS WAS MISSING!)
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, HomeFragment())
+                .commit()
+        }
+
         // DEFAULT TAB
         bottomNav.selectedItemId = R.id.nav_home
 
@@ -44,31 +51,31 @@ class MainActivity : AppCompatActivity() {
 
     private fun showHome() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, HomeFragment())  // НЕ SimpleTextFragment!
+            .replace(R.id.container, HomeFragment())
             .commit()
     }
 
     private fun showTrending() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, SimpleTextFragment("Trending"))
+            .replace(R.id.container, TrendingFragment())
             .commit()
     }
 
     private fun showTopRated() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, SimpleTextFragment("Top Rated"))
+            .replace(R.id.container, TopRatedFragment())
             .commit()
     }
 
     private fun showFavourites() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, SimpleTextFragment("Favourites"))
+            .replace(R.id.container, FavouritesFragment())
             .commit()
     }
 
     private fun showAccount() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, SimpleTextFragment("Account"))
+            .replace(R.id.container, AccountFragment())
             .commit()
     }
 }

@@ -7,36 +7,36 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class AnimeAdapter(
+class TrendingListAdapter(
     private val animeList: List<Anime>,
-    private val onAnimeClick: (Anime) -> Unit,
-    private val isTopRated: Boolean = false  // Нови параметар за разликовање
-) : RecyclerView.Adapter<AnimeAdapter.AnimeViewHolder>() {
+    private val onAnimeClick: (Anime) -> Unit
+) : RecyclerView.Adapter<TrendingListAdapter.TrendingViewHolder>() {
 
-    class AnimeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val ivAnimeImage: ImageView = view.findViewById(R.id.ivAnimeImage)
+    class TrendingViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val ivAnimePoster: ImageView = view.findViewById(R.id.ivAnimePoster)
         val tvAnimeTitle: TextView = view.findViewById(R.id.tvAnimeTitle)
         val tvRating: TextView = view.findViewById(R.id.tvRating)
+        val tvTypeEpisodes: TextView = view.findViewById(R.id.tvTypeEpisodes)
+        val tvYear: TextView = view.findViewById(R.id.tvYear)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AnimeViewHolder {
-        // Бира layout на основу isTopRated флага
-        val layoutId = if (isTopRated) {
-            R.layout.item_anime_top_rated
-        } else {
-            R.layout.item_anime_trending
-        }
-
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrendingViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(layoutId, parent, false)
-        return AnimeViewHolder(view)
+            .inflate(R.layout.item_trending_list, parent, false)
+        return TrendingViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: AnimeViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: TrendingViewHolder, position: Int) {
         val anime = animeList[position]
 
         holder.tvAnimeTitle.text = anime.title
         holder.tvRating.text = anime.rating.toString()
+
+        // Real data from API
+        val typeText = anime.type ?: "TV"
+        val episodesText = if (anime.episodes != null) "${anime.episodes} Episodes" else "? Episodes"
+        holder.tvTypeEpisodes.text = "$typeText • $episodesText"
+        holder.tvYear.text = anime.year?.toString() ?: "N/A"
 
         // Load poster image from API
         if (!anime.imageUrl.isNullOrEmpty()) {
@@ -44,9 +44,9 @@ class AnimeAdapter(
                 .load(anime.imageUrl)
                 .centerCrop()
                 .placeholder(android.R.color.darker_gray)
-                .into(holder.ivAnimeImage)
+                .into(holder.ivAnimePoster)
         } else {
-            holder.ivAnimeImage.setBackgroundColor(
+            holder.ivAnimePoster.setBackgroundColor(
                 android.graphics.Color.parseColor("#2A2A2A")
             )
         }

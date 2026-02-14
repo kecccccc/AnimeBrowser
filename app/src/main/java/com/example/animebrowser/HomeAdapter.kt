@@ -35,63 +35,92 @@ class HomeFragment : Fragment() {
 
         // Search click listener
         ivSearch.setOnClickListener {
-            Toast.makeText(requireContext(), "Search clicked!", Toast.LENGTH_SHORT).show()
-            // Овде ћеш касније отворити SearchActivity
+            startActivity(Intent(requireContext(), SearchActivity::class.java))
         }
 
         return view
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Refresh when returning from detail page
+        setupTrending()
+        setupTopRated()
+    }
+
     private fun setupTrending() {
-        // Dummy data - касније ћеш повући из API-ја
-        val trendingList = listOf(
-            Anime(1, "Attack on Titan", 9.1),
-            Anime(2, "One Piece", 9.1),
-            Anime(3, "Bleach", 9.1),
-            Anime(4, "Naruto", 8.9),
-            Anime(5, "My Hero Academia", 8.7)
-        )
+        // Fetch current season anime from API
+        RetrofitClient.apiService.getCurrentSeasonAnime(page = 1, limit = 10).enqueue(object : retrofit2.Callback<JikanSeasonAnimeResponse> {
+            override fun onResponse(call: retrofit2.Call<JikanSeasonAnimeResponse>, response: retrofit2.Response<JikanSeasonAnimeResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val animeList = response.body()!!.data.map { it.toAnime() }
 
-        rvTrending.layoutManager = LinearLayoutManager(
-            requireContext(),
-            LinearLayoutManager.HORIZONTAL,
-            false
-        )
+                    // Save anime data
+                    animeList.forEach { anime ->
+                        AnimeDataStore.saveAnime(requireContext(), anime)
+                    }
 
-        // Користи мање картице за trending
-        rvTrending.adapter = AnimeAdapter(
-            animeList = trendingList,
-            onAnimeClick = { anime ->
-                openAnimeDetail(anime)
-            },
-            isTopRated = false
-        )
+                    rvTrending.layoutManager = LinearLayoutManager(
+                        requireContext(),
+                        LinearLayoutManager.HORIZONTAL,
+                        false
+                    )
+
+                    rvTrending.adapter = AnimeAdapter(
+                        animeList = animeList,
+                        onAnimeClick = { anime ->
+                            openAnimeDetail(anime)
+                        },
+                        isTopRated = false
+                    )
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load trending anime", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<JikanSeasonAnimeResponse>, t: Throwable) {
+                Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun setupTopRated() {
-        // Dummy data
-        val topRatedList = listOf(
-            Anime(6, "Solo Leveling", 9.1),
-            Anime(7, "Demon Slayer", 9.1),
-            Anime(8, "Jujutsu Kaisen", 8.9),
-            Anime(9, "Chainsaw Man", 8.8)
-        )
+        // Fetch top anime from API
+        RetrofitClient.apiService.getTopAnime(page = 1, limit = 10).enqueue(object : retrofit2.Callback<JikanTopAnimeResponse> {
+            override fun onResponse(call: retrofit2.Call<JikanTopAnimeResponse>, response: retrofit2.Response<JikanTopAnimeResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val animeList = response.body()!!.data.map { it.toAnime() }
 
-        rvTopRated.layoutManager = LinearLayoutManager(
-            requireContext(),
-            LinearLayoutManager.HORIZONTAL,
-            false
-        )
+                    // Save anime data
+                    animeList.forEach { anime ->
+                        AnimeDataStore.saveAnime(requireContext(), anime)
+                    }
 
-        // Користи веће картице за top rated
-        rvTopRated.adapter = AnimeAdapter(
-            animeList = topRatedList,
-            onAnimeClick = { anime ->
-                openAnimeDetail(anime)
-            },
-            isTopRated = true
-        )
+                    rvTopRated.layoutManager = LinearLayoutManager(
+                        requireContext(),
+                        LinearLayoutManager.HORIZONTAL,
+                        false
+                    )
+
+                    rvTopRated.adapter = AnimeAdapter(
+                        animeList = animeList,
+                        onAnimeClick = { anime ->
+                            openAnimeDetail(anime)
+                        },
+                        isTopRated = true
+                    )
+                } else {
+                    // Response unsuccessful, silently ignore
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<JikanTopAnimeResponse>, t: Throwable) {
+                Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
+
+
 
     private fun openAnimeDetail(anime: Anime) {
         val intent = Intent(requireContext(), AnimeDetailActivity::class.java).apply {
